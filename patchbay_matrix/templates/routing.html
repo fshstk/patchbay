@@ -1,0 +1,152 @@
+{#
+Static HTML file for Opcode Studio 128X routing matrix
+Part of the patchbay_matrix package
+
+(c) Fabian Hummel 2020
+License: GNU GPL v3
+#}
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.css') }}">
+        <title>MIDI Patchbay Routing Matrix</title>
+        <style>
+            html {
+                position: relative;
+                min-height: 100%;
+            }
+            body {
+                margin-bottom: 60px;
+            }
+            .footer {
+                position: absolute;
+                bottom: 0;
+                width: 100%;
+                height: 60px;
+                line-height: 60px;
+                background-color: #f5f5f5;
+            }
+            #overlay {
+                position: fixed;
+                {% if is_connected %}
+                display: none;
+                {% endif %}
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(255,255,255,0.7);
+                z-index: 2;
+            }
+
+            #connect, #title {
+                position: relative;
+                z-index: 3;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="container">
+            <h1 id="title" class="text-center">MIDI Patchbay Routing Matrix</h1>
+        </div>
+
+        <div class="container">
+            <div id="overlay"></div>
+            <table id="matrix" class="table table-dark table-bordered text-center">
+                {{ table|safe }}
+            </table>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    {% if is_connected %}
+                    <button type="button" id="connect" class="btn btn-danger">Disconnect</button>
+                    {% else %}
+                    <button type="button" id="connect" class="btn btn-success">Connect</button>
+                    {% endif %}
+                </div>
+
+                <div class="col text-right">
+                    <button type="button" id="clear" class="btn btn-secondary">Clear All</button>
+                    <button type="button" id="standard" class="btn btn-primary">Standard Routing</button>                                        
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <div class="container text-center">
+                <span class="text-muted">© 2020 Fabian Hummel, Klangwerkstatt Graz</span>
+            </div>
+        </footer>
+
+        <script src="{{ url_for('static', filename='jquery-3.4.1.js') }}"></script>
+        <script src="{{ url_for('static', filename='bootstrap.js') }}"></script>
+    </body>
+
+    <script>
+        $(document).ready(function() {
+            $(document).on("mouseenter", "td", function() {
+                if(!$(this).hasClass("table-success")) {
+                    $(this).addClass("table-active");
+                }
+            });
+
+            $(document).on("mouseleave", "td", function() {
+                $(this).removeClass("table-active");
+            });
+
+            $(document).on("click", "td", function() {
+                $.post("/toggle", {id: $(this).attr('id')}, function(table){
+                    $('#matrix').html(table);
+                });
+            });
+
+            $(document).on("click", "#clear", function() {
+                $('#clear').addClass("disabled");
+                $('#clear').html("Please wait…");
+                $.post("/clear", {id: $(this).attr('id')}, function(table){
+                    $('#matrix').html(table);
+                    $('#clear').removeClass("disabled");
+                    $('#clear').html("Clear All");
+                });
+            });
+            
+            $(document).on("click", "#standard", function() {
+                $('#standard').addClass("disabled");
+                $('#standard').html("Please wait…");
+                $.post("/standard", function(table){
+                    $('#matrix').html(table);
+                    $('#standard').removeClass("disabled");
+                    $('#standard').html("Standard Routing");
+                });
+            });
+
+            $(document).on("click", "#connect", function() {
+                $('#connect').addClass("disabled");
+                $('#connect').html("Please wait…");
+                $.post("/connect", function(is_connected){
+                    if(is_connected == "1") {
+                        $('#connect').html("Disconnect");
+                        $('#connect').removeClass("btn-success");
+                        $('#connect').addClass("btn-danger");
+                        $("#overlay").hide();
+                    } else {
+                        $('#connect').html("Connect");
+                        $('#connect').removeClass("btn-danger");
+                        $('#connect').addClass("btn-success");
+                        $("#overlay").show();
+                    }
+                    $('#connect').removeClass("disabled");
+                });
+
+            });
+        });
+    </script>
+</html>
