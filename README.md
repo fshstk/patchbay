@@ -46,21 +46,21 @@ Python Shell
 
 ### MIDI Routing
 
-- Enable MIDI routing from input a (1-8) to output b (1-8):
+Enable MIDI routing from input a (1-8) to output b (1-8):
 
     OpcodeStudio128X.route(a, b)
     
-- Disable MIDI routing from input a to output b:
+Disable MIDI routing from input a to output b:
 
     OpcodeStudio128X.route(a, b, enable = False)
 
 ### Patch Selection/Storage:
 
-- Select patch number n (1-8):
+Select patch number n (1-8):
 
     x.select_patch(n)
     
-- Store current configuration in patch number n (1-8):
+Store current configuration in patch number n (1-8):
 
     x.store_patch(n)
     
